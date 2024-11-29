@@ -4,6 +4,7 @@ import { connectDB } from './config/db.js';
 // import productRoutes from "./routes/product.route.js";
 import path from "path";
 import cors from "cors";
+import alertRoute from "./routes/alert.route.js";
 
 dotenv.config();
 
@@ -28,7 +29,7 @@ app.use(
   })
 );
 
-// app.use("/api/products", productRoutes);
+ app.use("/api/alert", alertRoute);
 
 if(process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/frontend/dist")));

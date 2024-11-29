@@ -6,6 +6,7 @@ import path from "path";
 import cors from "cors";
 import alertRoute from "./routes/alert.route.js";
 import monitoringDataRoute from "./routes/monitoring-data.route.js";
+import patientRoute from "./routes/patient.route.js";
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use(
 
 app.use("/api/alert", alertRoute);
 app.use("/api/monitor", monitoringDataRoute);
+app.use("/api/patient", patientRoute);
 
 if(process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/frontend/dist")));

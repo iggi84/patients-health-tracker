@@ -5,6 +5,7 @@ import { connectDB } from './config/db.js';
 import path from "path";
 import cors from "cors";
 import alertRoute from "./routes/alert.route.js";
+import monitoringDataRoute from "./routes/monitoring-data.route.js";
 
 dotenv.config();
 
@@ -29,7 +30,8 @@ app.use(
   })
 );
 
- app.use("/api/alert", alertRoute);
+app.use("/api/alert", alertRoute);
+app.use("/api/monitor", monitoringDataRoute);
 
 if(process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "/frontend/dist")));

@@ -7,7 +7,7 @@ const monitoringSchema = mongoose.Schema(
       ref: "Patient",
       required: true,
     },
-    metrics: {
+    vitalSigns: {
       heartRate: {
         type: Number,
         required: true,

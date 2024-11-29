@@ -34,21 +34,27 @@ export const getPatientById = async (req, res) => {
 
 // Create a new patient
 export const createPatient = async (req, res) => {
-  const patient = req.body;
+  const { name, age, contactInfo, medicalHistory, assignedDeviceId } = req.body;
 
   // Validate required fields
-  if (!patient.name || !patient.age || !patient.gender) {
-    return res.status(400).json({ success: false, message: "Please provide all required fields." });
+  if (!name || !age) {
+    return res.status(400).json({ success: false, message: "Please provide name and age." });
   }
 
-  const newPatient = new Patient(patient);
-
   try {
+    const newPatient = new Patient({
+      name,
+      age,
+      contactInfo: contactInfo || {}, // Default to empty object if not provided
+      medicalHistory: medicalHistory || [], // Default to empty array if not provided
+      assignedDeviceId: assignedDeviceId || null, // Default to null if not provided
+    });
+
     await newPatient.save();
     return res.status(201).json({ success: true, data: newPatient });
   } catch (error) {
     console.error("Error while saving patient:", error.message);
-    return res.status(500).json({ success: false, message: "Server Error" });
+    return res.status(500).json({ success: false, message: "Server Error: " + error.message });
   }
 };
 

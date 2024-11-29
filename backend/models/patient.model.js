@@ -23,7 +23,7 @@ const patientSchema = mongoose.Schema({
     phone: {
       type: String,
       required: [true, "Phone number is required"],
-      match: [/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"]
+      trim: true
     }
   },
   medicalHistory: {
@@ -37,12 +37,9 @@ const patientSchema = mongoose.Schema({
     }
   },
   assignedDeviceId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Device",
-    validate: {
-      validator: mongoose.isValidObjectId,
-      message: "Invalid device ID"
-    }
+    type: String, // Changed from ObjectId to String
+    trim: true,
+    default: null, // Optional field
   }
 }, {
   timestamps: true

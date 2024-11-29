@@ -11,25 +11,26 @@ import patientRoute from "./routes/patient.route.js";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const __dirname = path.resolve();
-app.use(express.json());
-
 app.use(
   cors({
-    origin: "https://opto.website", // Allow requests from your frontend domain
-    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed HTTP methods
+    origin: (origin, callback) => {
+      const allowedOrigins = ["https://opto.website", "http://localhost:5173"];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
     credentials: true, // Allow cookies or credentials if needed
   })
 );
 
-app.use(
-  cors({
-    origin: "http://localhost:5173", // Allow requests from Vite dev server
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
-    credentials: true, // Include cookies or credentials if needed
-  })
-);
+
+const PORT = process.env.PORT || 3000;
+const __dirname = path.resolve();
+app.use(express.json());
+
 
 app.use("/api/alert", alertRoute);
 app.use("/api/monitor", monitoringDataRoute);

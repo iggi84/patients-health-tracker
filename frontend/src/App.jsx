@@ -4,6 +4,7 @@ import {Route, Routes} from "react-router-dom";
 import HomePage from "./pages/HomePage.jsx";
 import AddPatientPage from "./pages/AddPatientPage.jsx";
 import AboutPage from "./pages/AboutPage.jsx";
+import PatientDetails from "./pages/PatientDetails.jsx";
 
 
 function App() {
@@ -12,6 +13,7 @@ function App() {
           <Navbar/>
           <Routes>
               <Route path="/" element={<HomePage/>}/>
+              <Route path="/patient/:id" element={<PatientDetails/>}/>
               <Route path="/addPatient" element={<AddPatientPage/>}/>
               <Route path="/about" element={<AboutPage/>}/>
           </Routes>

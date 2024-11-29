@@ -88,11 +88,14 @@ const PatientCard = ({ patient }) => {
         >
             {/* Fixed Placeholder Image */}
             <Image
-                src="https://via.placeholder.com/150"
-                alt="Patient"
-                h={48}
-                w="full"
+                src="userAvatar.svg"
+                alt={patient.name}
+                h={40}
+                w={40}
                 objectFit="cover"
+                objectPosition="center"
+                display="block"
+                mx="auto"
             />
 
             {/* Patient Details */}

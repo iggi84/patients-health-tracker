@@ -10,7 +10,7 @@ export const usePatientStore = create((set) => ({
   fetchPatients: async () => {
     const API_URL = import.meta.env.VITE_API_URL;
     try {
-      const response = await fetch(`${API_URL}/patients/`);
+      const response = await fetch(`${API_URL}/patient/`);
       const data = await response.json();
       if (data.success) {
         set({ patients: data.data });

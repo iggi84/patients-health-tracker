@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 // Get all patients
 export const getPatients = async (req, res) => {
   try {
-    const patients = await Patient.find({});
+    const patients = await Patient.find({}).sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: patients });
   } catch (error) {
     console.error("Error while fetching patients:", error.message);

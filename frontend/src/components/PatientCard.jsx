@@ -23,6 +23,7 @@ import {
 } from "@chakra-ui/react";
 import { usePatientStore } from "../store/patientStore";
 import { useState } from "react";
+import {Link} from "react-router-dom";
 
 const PatientCard = ({ patient }) => {
     const [updatedPatient, setUpdatedPatient] = useState(patient);
@@ -122,11 +123,13 @@ const PatientCard = ({ patient }) => {
 
                 {/* Action Buttons */}
                 <HStack spacing={2}>
-                    <IconButton
-                        icon={<InfoOutlineIcon />}
-                        onClick={() => console.log("View details for", patient.name)}
-                        colorScheme="teal"
-                     aria-label={"Details"}/>
+                    <Link to={`/patient/${patient._id}`}>
+                        <IconButton
+                            icon={<InfoOutlineIcon />}
+                            colorScheme="teal"
+                            aria-label="Details"
+                        />
+                    </Link>
                     <IconButton icon={<EditIcon />} onClick={onOpen} colorScheme="blue"  aria-label={"Edit"}/>
                     <IconButton
                         icon={<DeleteIcon />}

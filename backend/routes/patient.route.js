@@ -9,10 +9,10 @@ import {
 
 const router = express.Router();
 
-router.get("/patients", getPatients);
-router.get("/patients/:id", getPatientById);
-router.post("/patients", createPatient);
-router.put("/patients/:id", updatePatient);
-router.delete("/patients/:id", deletePatient);
+router.get("/", getPatients);
+router.get("/:id", getPatientById);
+router.post("/", createPatient);
+router.put("/:id", updatePatient);
+router.delete("/:id", deletePatient);
 
 export default router;

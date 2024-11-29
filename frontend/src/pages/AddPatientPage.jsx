@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { usePatientStore } from "../store/patientStore.js";
 
 const AddPatientPage = () => {
+    const textColor = useColorModeValue("blue.500", "blue.300");
+
     const [newPatient, setNewPatient] = useState({
         name: "",
         age: "",
@@ -57,7 +59,7 @@ const AddPatientPage = () => {
     return (
         <Container maxW={"container.sm"}>
             <VStack spacing={8}>
-                <Heading as={"h1"} size={"2xl"} textAlign={"center"} mb={8}>
+                <Heading color={textColor} as={"h1"} size={"2xl"} textAlign={"center"} mb={8}>
                     Add New Patient
                 </Heading>
                 <Box

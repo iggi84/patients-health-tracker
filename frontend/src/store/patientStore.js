@@ -22,6 +22,23 @@ export const usePatientStore = create((set) => ({
     }
   },
 
+  fetchPatientById: async (patientId) => {
+    const API_URL = import.meta.env.VITE_API_URL;
+    try {
+      const response = await fetch(`${API_URL}/patient/${patientId}`);
+      const data = await response.json();
+      if (data.success) {
+        return { success: true, data: data.data };
+      } else {
+        console.error("Failed to fetch patient by ID:", data.message);
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      console.error("Error fetching patient by ID:", error.message);
+      return { success: false, message: "Server error" };
+    }
+  },
+
   // Create a new patient
   createPatient: async (newPatient) => {
     const API_URL = import.meta.env.VITE_API_URL;

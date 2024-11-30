@@ -11,6 +11,7 @@ import patientRoute from "./routes/patient.route.js";
 dotenv.config();
 
 const app = express();
+app.options('*',cors())
 app.use(
   cors({
     origin: (origin, callback) => {

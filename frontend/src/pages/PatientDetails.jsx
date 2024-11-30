@@ -212,7 +212,7 @@ const PatientDetails = () => {
             </Flex>
 
             {/* Bottom Section: Monitoring Data */}
-            <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={4} mt={4}>
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={4} mt={4} h={"40"}>
                 <Box shadow="lg" rounded="lg" bg={bg} p={4} textAlign="center">
                     <Heading as="h4" size="md" mb={1}>
                         Heart Rate

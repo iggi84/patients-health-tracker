@@ -13,16 +13,9 @@ dotenv.config();
 const app = express();
 app.use(
   cors({
-    origin: (origin, callback) => {
-      const allowedOrigins = ["https://opto.website"];
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "*", // Allow all origins
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
-    credentials: true, // Allow cookies or credentials if needed
+    credentials: false, // Disables credentials (cookies, authorization headers)
   })
 );
 

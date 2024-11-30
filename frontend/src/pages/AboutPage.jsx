@@ -51,9 +51,9 @@ const AboutPage = () => {
                     This project was collaboratively developed by:
                 </Text>
                 <VStack align="start" mt={2} spacing={1} pl={4}>
-                    <Text fontSize="md" color="gray.400">• Student 1: Focused on Backend Development and AI Integration.</Text>
-                    <Text fontSize="md" color="gray.400">• Student 2: Specialized in Frontend Development and UI Design.</Text>
-                    <Text fontSize="md" color="gray.400">• Student 3: Led Project Management and Deployment.</Text>
+                    <Text fontSize="md" color="gray.400">• Igor Vojinovic A00137965 Focused on Backend Development and helping with testing.</Text>
+                    <Text fontSize="md" color="gray.400">• Jonathan Josipp Guachamin Jimenez A00109506 Specialized in Frontend Development and UI Design.</Text>
+                    <Text fontSize="md" color="gray.400">• Mehmet Emin Seyhan  A00111734 Led Project Management and Deployment to AWS.</Text>
                 </VStack>
             </Box>
         </Container>

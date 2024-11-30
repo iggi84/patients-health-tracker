@@ -12,20 +12,20 @@ dotenv.config();
 
 const app = express();
 app.options('*',cors())
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      const allowedOrigins = ["https://opto.website"];
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
-    credentials: true, // Allow cookies or credentials if needed
-  })
-);
+// app.use(
+//   cors({
+//     origin: (origin, callback) => {
+//       const allowedOrigins = ["https://opto.website"];
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
+//     credentials: true, // Allow cookies or credentials if needed
+//   })
+// );
 
 
 const PORT = process.env.PORT || 3000;

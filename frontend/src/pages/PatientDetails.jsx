@@ -25,12 +25,15 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useMonitoringStore } from "../store/monitoringStore";
 import { usePatientStore } from "../store/patientStore";
 
 const PatientDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { fetchPatients, patients, deletePatient, updatePatient } = usePatientStore();
+    const { monitoringData, fetchMonitoringDataByPatientId } = useMonitoringStore();
+
     const toast = useToast();
     const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -43,6 +46,27 @@ const PatientDetails = () => {
     useEffect(() => {
         fetchPatients();
     }, [fetchPatients]);
+
+    useEffect(() => {
+        const patientData = patients.find((p) => p._id === id);
+        setPatient(patientData);
+        setUpdatedPatient(patientData);
+
+        if (id) {
+            fetchMonitoringDataByPatientId(id);
+        }
+    }, [id, patients, fetchMonitoringDataByPatientId]);
+
+    // Refresh monitoring data every 30 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (id) {
+                fetchMonitoringDataByPatientId(id);
+            }
+        }, 30000);
+
+        return () => clearInterval(interval); // Cleanup on unmount
+    }, [id, fetchMonitoringDataByPatientId]);
 
     useEffect(() => {
         const patientData = patients.find((p) => p._id === id);
@@ -193,19 +217,19 @@ const PatientDetails = () => {
                     <Heading as="h4" size="md" mb={1}>
                         Heart Rate
                     </Heading>
-                    <Text color={textColor}>{patient.heartRate || "N/A"} BPM</Text>
+                    <Text color={textColor}>{monitoringData?.vitalSigns?.heartRate || "N/A"} BPM</Text>
                 </Box>
                 <Box shadow="lg" rounded="lg" bg={bg} p={4} textAlign="center">
                     <Heading as="h4" size="md" mb={1}>
                         Systolic BP
                     </Heading>
-                    <Text color={textColor}>{patient.bloodPressure?.systolic || "N/A"}</Text>
+                    <Text color={textColor}>{monitoringData?.vitalSigns?.bloodPressure?.systolic || "N/A"} mmHg</Text>
                 </Box>
                 <Box shadow="lg" rounded="lg" bg={bg} p={4} textAlign="center">
                     <Heading as="h4" size="md" mb={1}>
                         Diastolic BP
                     </Heading>
-                    <Text color={textColor}>{patient.bloodPressure?.diastolic || "N/A"} mmHg</Text>
+                    <Text color={textColor}>{monitoringData?.vitalSigns?.bloodPressure?.diastolic || "N/A"} mmHg</Text>
                 </Box>
                 <Box shadow="lg" rounded="lg" bg={bg} p={4} textAlign="center">
                     <Heading as="h4" size="md" mb={1}>

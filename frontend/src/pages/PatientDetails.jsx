@@ -1,65 +1,302 @@
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import {
+    Box,
+    Button,
+    Flex,
+    Heading,
+    HStack,
+    Image,
+    Input,
+    Modal,
+    ModalBody,
+    ModalCloseButton,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    SimpleGrid,
+    Spinner,
+    Text,
+    Textarea,
+    useColorModeValue,
+    useDisclosure,
+    useToast,
+    VStack,
+} from "@chakra-ui/react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Box, Text, VStack, Heading, Spinner } from "@chakra-ui/react";
+import { usePatientStore } from "../store/patientStore";
 
 const PatientDetails = () => {
-    const { id } = useParams(); // Get the patient ID from the route
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { fetchPatients, patients, deletePatient, updatePatient } = usePatientStore();
+    const toast = useToast();
+    const { isOpen, onOpen, onClose } = useDisclosure();
+
     const [patient, setPatient] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [updatedPatient, setUpdatedPatient] = useState(null);
+
+    const textColor = useColorModeValue("gray.600", "gray.200");
+    const bg = useColorModeValue("white", "gray.800");
 
     useEffect(() => {
-        const fetchPatientDetails = async () => {
-            try {
-                const API_URL = import.meta.env.VITE_API_URL;
-                const response = await fetch(`${API_URL}/patient/${id}`);
-                const data = await response.json();
-                if (data.success) {
-                    setPatient(data.data);
-                } else {
-                    console.error("Error fetching patient details:", data.message);
-                }
-            } catch (error) {
-                console.error("Error:", error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+        fetchPatients();
+    }, [fetchPatients]);
 
-        fetchPatientDetails();
-    }, [id]);
-
-    if (loading) {
-        return <Spinner size="xl" color="blue.500" />;
-    }
+    useEffect(() => {
+        const patientData = patients.find((p) => p._id === id);
+        setPatient(patientData);
+        setUpdatedPatient(patientData);
+    }, [id, patients]);
 
     if (!patient) {
-        return <Text color="red.500">Patient not found.</Text>;
+        return (
+            <Flex justify="center" align="center" h="100vh">
+                <Spinner size="xl" />
+            </Flex>
+        );
     }
 
+    const handleDeletePatient = async () => {
+        const { success, message } = await deletePatient(patient._id);
+        if (success) {
+            toast({
+                title: "Success",
+                description: "Patient deleted successfully.",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            navigate("/");
+        } else {
+            toast({
+                title: "Error",
+                description: message,
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
+
+    const handleUpdatePatient = async () => {
+        const { success, message } = await updatePatient(patient._id, updatedPatient);
+        if (success) {
+            toast({
+                title: "Success",
+                description: "Patient updated successfully.",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+            setPatient(updatedPatient);
+            onClose();
+        } else {
+            toast({
+                title: "Error",
+                description: message,
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
+    };
+
     return (
-        <Box maxW="container.sm" mx="auto" p={4}>
-            <VStack spacing={4}>
-                <Heading size="lg">Patient Details</Heading>
-                <Text>
-                    <strong>Name:</strong> {patient.name}
-                </Text>
-                <Text>
-                    <strong>Age:</strong> {patient.age}
-                </Text>
-                <Text>
-                    <strong>Contact Email:</strong> {patient.contactInfo.email}
-                </Text>
-                <Text>
-                    <strong>Contact Phone:</strong> {patient.contactInfo.phone}
-                </Text>
-                <Text>
-                    <strong>Medical History:</strong> {patient.medicalHistory.join(", ") || "N/A"}
-                </Text>
-                <Text>
-                    <strong>Assigned Device ID:</strong> {patient.assignedDeviceId || "N/A"}
-                </Text>
-            </VStack>
-        </Box>
+        <Flex direction="column" gap={4} p={6}>
+            {/* Top Section */}
+            <Flex
+                direction={{ base: "column", lg: "row" }}
+                gap={4}
+                justify="space-between"
+            >
+                {/* Patient Card */}
+                <Box
+                    shadow="lg"
+                    rounded="lg"
+                    overflow="hidden"
+                    bg={bg}
+                    w={{ base: "100%" , lg: "25%" }}
+                >
+                    <Image
+                        src="/userAvatar.svg"
+                        alt={patient.name}
+                        h={40}
+                        w={40}
+                        objectFit="cover"
+                        objectPosition="center"
+                        display="block"
+                        mx="auto"
+                    />
+                    <Box p={4}>
+                        <Heading as="h3" size="lg" mb={2}>
+                            {patient.name}
+                        </Heading>
+                        <Text fontSize="md" color={textColor} mb={1}>
+                            Age: {patient.age}
+                        </Text>
+                        <Text fontSize="md" color={textColor} mb={1}>
+                            Device ID: {patient.assignedDeviceId || "N/A"}
+                        </Text>
+                        <Text fontSize="md" color={textColor} mb={1}>
+                            Email: {patient.contactInfo?.email || "N/A"}
+                        </Text>
+                        <Text fontSize="md" color={textColor} mb={1}>
+                            Phone: {patient.contactInfo?.phone || "N/A"}
+                        </Text>
+                        <HStack spacing={2} mt={4}>
+                            <Button
+                                leftIcon={<EditIcon />}
+                                colorScheme="blue"
+                                size="sm"
+                                onClick={onOpen}
+                            >
+                                Update
+                            </Button>
+                            <Button
+                                leftIcon={<DeleteIcon />}
+                                colorScheme="red"
+                                size="sm"
+                                onClick={handleDeletePatient}
+                            >
+                                Delete
+                            </Button>
+                        </HStack>
+                    </Box>
+                </Box>
+
+                {/* Medical History */}
+                <Box
+                    shadow="lg"
+                    rounded="lg"
+                    overflow="hidden"
+                    bg={bg}
+                    w={{ base: "100%", lg: "75%" }}
+                >
+                    <Box p={4} h="full">
+                        <Heading as="h3" size="lg" mb={2}>
+                            Medical History
+                        </Heading>
+                        <Text fontSize="sm" color={textColor} overflowY="auto" maxH="400px">
+                            {patient.medicalHistory?.length > 0
+                                ? patient.medicalHistory.join(", ")
+                                : "No medical history available."}
+                        </Text>
+                    </Box>
+                </Box>
+            </Flex>
+
+            {/* Bottom Section: Monitoring Data */}
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 4 }} spacing={4} mt={4}>
+                <Box shadow="lg" rounded="lg" bg={bg} p={4} textAlign="center">
+                    <Heading as="h4" size="md" mb={1}>
+                        Heart Rate
+                    </Heading>
+                    <Text color={textColor}>{patient.heartRate || "N/A"} BPM</Text>
+                </Box>
+                <Box shadow="lg" rounded="lg" bg={bg} p={4} textAlign="center">
+                    <Heading as="h4" size="md" mb={1}>
+                        Systolic BP
+                    </Heading>
+                    <Text color={textColor}>{patient.bloodPressure?.systolic || "N/A"}</Text>
+                </Box>
+                <Box shadow="lg" rounded="lg" bg={bg} p={4} textAlign="center">
+                    <Heading as="h4" size="md" mb={1}>
+                        Diastolic BP
+                    </Heading>
+                    <Text color={textColor}>{patient.bloodPressure?.diastolic || "N/A"} mmHg</Text>
+                </Box>
+                <Box shadow="lg" rounded="lg" bg={bg} p={4} textAlign="center">
+                    <Heading as="h4" size="md" mb={1}>
+                        Alerts
+                    </Heading>
+                    <Text color={textColor}>No recent alerts</Text>
+                </Box>
+            </SimpleGrid>
+
+            {/* Update Modal */}
+            <Modal isOpen={isOpen} onClose={onClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Update Patient</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <VStack spacing={3}>
+                            <Input
+                                placeholder="Patient Name"
+                                value={updatedPatient?.name || ""}
+                                onChange={(e) =>
+                                    setUpdatedPatient({ ...updatedPatient, name: e.target.value })
+                                }
+                            />
+                            <Input
+                                placeholder="Age"
+                                type="number"
+                                value={updatedPatient?.age || ""}
+                                onChange={(e) =>
+                                    setUpdatedPatient({ ...updatedPatient, age: e.target.value })
+                                }
+                            />
+                            <Input
+                                placeholder="Email"
+                                value={updatedPatient?.contactInfo?.email || ""}
+                                onChange={(e) =>
+                                    setUpdatedPatient({
+                                        ...updatedPatient,
+                                        contactInfo: {
+                                            ...updatedPatient.contactInfo,
+                                            email: e.target.value,
+                                        },
+                                    })
+                                }
+                            />
+                            <Input
+                                placeholder="Phone"
+                                value={updatedPatient?.contactInfo?.phone || ""}
+                                onChange={(e) =>
+                                    setUpdatedPatient({
+                                        ...updatedPatient,
+                                        contactInfo: {
+                                            ...updatedPatient.contactInfo,
+                                            phone: e.target.value,
+                                        },
+                                    })
+                                }
+                            />
+                            <Textarea
+                                placeholder="Medical History"
+                                value={updatedPatient?.medicalHistory?.join(", ") || ""}
+                                onChange={(e) =>
+                                    setUpdatedPatient({
+                                        ...updatedPatient,
+                                        medicalHistory: e.target.value.split(",").map((item) => item.trim()),
+                                    })
+                                }
+                            />
+                            <Input
+                                placeholder="Device ID"
+                                value={updatedPatient?.assignedDeviceId || ""}
+                                onChange={(e) =>
+                                    setUpdatedPatient({
+                                        ...updatedPatient,
+                                        assignedDeviceId: e.target.value,
+                                    })
+                                }
+                            />
+                        </VStack>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button colorScheme="blue" mr={3} onClick={handleUpdatePatient}>
+                            Update
+                        </Button>
+                        <Button variant="ghost" onClick={onClose}>
+                            Cancel
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        </Flex>
     );
 };
 

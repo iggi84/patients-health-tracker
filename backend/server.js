@@ -33,7 +33,7 @@ app.use(express.json());
 
 
 app.use("/api/alert", alertRoute);
-app.use("/api/monitor", monitoringDataRoute);
+app.use("/api/monitoring", monitoringDataRoute);
 app.use("/api/patient", patientRoute);
 
 if(process.env.NODE_ENV === "production") {

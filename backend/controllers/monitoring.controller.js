@@ -12,12 +12,42 @@ export const getMonitoringData = async (req, res) => {
   }
 };
 
+// Get monitoring data by patient ID
+export const getMonitoringDataByPatientId = async (req, res) => {
+  const { id } = req.params;
+  const { latest } = req.query;
+
+  console.log("Received patientId:", id);
+  console.log(mongoose.Types.ObjectId.isValid(id));
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: "Invalid patient ID" });
+  }
+
+  try {
+    let query = { patientId: id };
+    let options = latest === "true" ? { sort: { monitoringTimestamp: -1 }, limit: 1 } : {};
+
+    console.log("Query:", query);
+
+    const monitoringData = await Monitoring.findOne(query).sort({ updatedAt: -1 });
+    console.log("Fetched data:", monitoringData);
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
+
+    res.status(200).json({ success: true, data: latest === "true" ? monitoringData : monitoringData });
+  } catch (error) {
+    console.error("Error fetching monitoring data:", error.message);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 // Create new monitoring data
 export const createMonitoringData = async (req, res) => {
   const monitoring = req.body;
 
   // Validate required fields
-  if (!monitoring.patientId || !monitoring.vitalSigns || !monitoring.timestamp) {
+  if (!monitoring.patientId) {
     return res.status(400).json({ success: false, message: "Please provide all required fields." });
   }
 

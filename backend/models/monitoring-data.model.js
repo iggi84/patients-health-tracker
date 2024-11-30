@@ -5,40 +5,35 @@ const monitoringSchema = mongoose.Schema(
     patientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Patient",
-      required: true,
+
     },
     vitalSigns: {
       heartRate: {
         type: Number,
-        required: true,
-        min: 40, // Assuming minimum heart rate for monitoring
-        max: 200, // Assuming maximum heart rate for monitoring
+
+        default: 0,// Current heart rate value
       },
       oxygenSaturation: {
         type: Number,
-        required: true,
-        min: 70, // Minimum acceptable oxygen saturation
-        max: 100, // Maximum oxygen saturation percentage
+
+        default: 0,
       },
       bloodPressure: {
         systolic: {
           type: Number,
-          required: true,
-          min: 10, // Minimum systolic value
-          max: 250, // Maximum systolic value
+
+          default: 0,
         },
         diastolic: {
           type: Number,
-          required: true,
-          min: 10, // Minimum diastolic value
-          max: 180, // Maximum diastolic value
+
+          default: 0,
         },
       },
       temperature: {
         type: Number,
-        required: true,
-        min: 35, // Minimum temperature in Celsius
-        max: 42, // Maximum temperature in Celsius
+
+        default: 0.0,
       },
     },
     alertGenerated: {

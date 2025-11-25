@@ -1,0 +1,30 @@
+{
+  "model_type": "RandomForestClassifier",
+  "training_date": "2025-11-25T14:36:25.168155",
+  "feature_count": 11,
+  "features": [
+    "Heart Rate",
+    "Respiratory Rate",
+    "Body Temperature",
+    "Oxygen Saturation",
+    "Systolic Blood Pressure",
+    "Diastolic Blood Pressure",
+    "Age",
+    "Derived_BMI",
+    "Derived_HRV",
+    "Derived_Pulse_Pressure",
+    "Derived_MAP"
+  ],
+  "metrics": {
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "cv_score": 0.9999750023435304
+  },
+  "risk_mapping": {
+    "High Risk": 0,
+    "Low Risk": 1
+  },
+  "scaled": false
+}

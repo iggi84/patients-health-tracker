@@ -14,6 +14,23 @@ const patientSchema = mongoose.Schema({
     min: [0, "Age must be a positive number"],
     max: [150, "Age must be less than or equal to 150"]
   },
+  dateOfBirth: {
+      type: Date,
+      required: false,
+      default: null
+    },
+  weight: {
+      type: Number,
+      required: false,
+      default: null,
+      min: [0, "Weight must be positive"]
+    },
+  height: {
+      type: Number,
+      required: false,
+      default: null,
+      min: [0, "Height must be positive"]
+    },
   contactInfo: {
     email: {
       type: String,

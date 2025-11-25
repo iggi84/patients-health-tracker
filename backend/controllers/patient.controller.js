@@ -1,5 +1,7 @@
 import Patient from "../models/patient.model.js";
 import mongoose from "mongoose";
+import Monitoring from "../models/monitoring-data.model.js";
+import { getRiskPrediction } from '../ml/predictor.js';
 
 // Get all patients
 export const getPatients = async (req, res) => {
@@ -96,4 +98,39 @@ export const deletePatient = async (req, res) => {
     console.error("Error while deleting patient:", error.message);
     return res.status(500).json({ success: false, message: "Server Error" });
   }
+};
+
+export const getPatientRiskAssessment = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ success: false, message: "Invalid patient ID" });
+        }
+
+        const patient = await Patient.findById(id);
+        if (!patient) {
+            return res.status(404).json({ success: false, message: "Patient not found" });
+        }
+
+        const monitoring = await Monitoring.findOne({ patientId: id }).sort({ updatedAt: -1 });
+        if (!monitoring) {
+            return res.status(404).json({ success: false, message: "No monitoring data found" });
+        }
+
+        const prediction = await getRiskPrediction(patient, monitoring);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                patientId: id,
+                patientName: patient.name,
+                timestamp: new Date(),
+                ...prediction
+            }
+        });
+    } catch (error) {
+        console.error("Risk assessment error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 };

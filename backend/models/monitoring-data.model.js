@@ -13,6 +13,10 @@ const monitoringSchema = mongoose.Schema(
 
         default: 0,// Current heart rate value
       },
+      respiratoryRate: {
+            type: Number,
+            default: 0,
+        },
       oxygenSaturation: {
         type: Number,
 

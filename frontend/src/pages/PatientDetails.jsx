@@ -27,6 +27,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useMonitoringStore } from "../store/monitoringStore";
 import { usePatientStore } from "../store/patientStore";
+import RiskAssessmentCard from "../components/RiskAssessmentCard";
 
 const PatientDetails = () => {
     const { id } = useParams();
@@ -65,14 +66,8 @@ const PatientDetails = () => {
             }
         }, 30000);
 
-        return () => clearInterval(interval); // Cleanup on unmount
+        return () => clearInterval(interval);
     }, [id, fetchMonitoringDataByPatientId]);
-
-    useEffect(() => {
-        const patientData = patients.find((p) => p._id === id);
-        setPatient(patientData);
-        setUpdatedPatient(patientData);
-    }, [id, patients]);
 
     if (!patient) {
         return (
@@ -190,25 +185,42 @@ const PatientDetails = () => {
                     </Box>
                 </Box>
 
-                {/* Medical History */}
-                <Box
-                    shadow="lg"
-                    rounded="lg"
-                    overflow="hidden"
-                    bg={bg}
+                {/* Right Side: Medical History and AI Risk Assessment Side by Side */}
+                <Flex
+                    gap={4}
                     w={{ base: "100%", lg: "75%" }}
+                    direction={{ base: "column", md: "row" }}
                 >
-                    <Box p={4} h="full">
+                    {/* Medical History - Scrollable */}
+                    <Box
+                        shadow="lg"
+                        rounded="lg"
+                        bg={bg}
+                        p={4}
+                        w={{ base: "100%", md: "50%" }}
+                        maxH="400px"
+                        overflowY="auto"
+                    >
                         <Heading as="h3" size="lg" mb={2}>
                             Medical History
                         </Heading>
-                        <Text fontSize="sm" color={textColor} overflowY="auto" maxH="400px">
+                        <Text fontSize="sm" color={textColor}>
                             {patient.medicalHistory?.length > 0
                                 ? patient.medicalHistory.join(", ")
                                 : "No medical history available."}
                         </Text>
                     </Box>
-                </Box>
+
+                    {/* AI Risk Assessment - Scrollable */}
+                    <Box
+                        w={{ base: "100%", md: "50%" }}
+                        minH="400px"
+                        maxH="400px"
+                        overflowY="auto"
+                    >
+                        <RiskAssessmentCard patientId={id} />
+                    </Box>
+                </Flex>
             </Flex>
 
             {/* Bottom Section: Monitoring Data */}

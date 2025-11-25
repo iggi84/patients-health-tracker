@@ -2,6 +2,7 @@ import Patient from "../models/patient.model.js";
 import mongoose from "mongoose";
 import Monitoring from "../models/monitoring-data.model.js";
 import { getRiskPrediction } from '../ml/predictor.js';
+import RiskAssessment from "../models/risk-assessment.model.js";
 
 // Get all patients
 export const getPatients = async (req, res) => {
@@ -118,19 +119,78 @@ export const getPatientRiskAssessment = async (req, res) => {
             return res.status(404).json({ success: false, message: "No monitoring data found" });
         }
 
+        // Get ML prediction
         const prediction = await getRiskPrediction(patient, monitoring);
+
+        // Calculate BMI for snapshot
+        let bmi = null;
+        if (patient.weight && patient.height) {
+            const heightInMeters = patient.height / 100;
+            bmi = patient.weight / (heightInMeters * heightInMeters);
+        }
+
+        // Save assessment to database for audit trail (HIPAA compliance)
+        const assessment = new RiskAssessment({
+            patientId: id,
+            riskLevel: prediction.riskLevel,
+            confidence: prediction.confidence,
+            riskFactors: prediction.riskFactors || [],
+            probabilities: prediction.probabilities,
+            vitalSignsSnapshot: {
+                heartRate: monitoring.vitalSigns.heartRate,
+                respiratoryRate: monitoring.vitalSigns.respiratoryRate,
+                bloodPressure: {
+                    systolic: monitoring.vitalSigns.bloodPressure.systolic,
+                    diastolic: monitoring.vitalSigns.bloodPressure.diastolic
+                },
+                oxygenSaturation: monitoring.vitalSigns.oxygenSaturation,
+                temperature: monitoring.vitalSigns.temperature
+            },
+            patientMetadata: {
+                age: patient.age,
+                weight: patient.weight,
+                height: patient.height,
+                bmi: bmi
+            },
+            assessmentTimestamp: new Date()
+        });
+
+        await assessment.save();
 
         res.status(200).json({
             success: true,
             data: {
                 patientId: id,
                 patientName: patient.name,
-                timestamp: new Date(),
+                timestamp: assessment.assessmentTimestamp,
                 ...prediction
             }
         });
     } catch (error) {
         console.error("Risk assessment error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const getRiskAssessmentHistory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { limit = 10 } = req.query;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ success: false, message: "Invalid patient ID" });
+        }
+
+        const history = await RiskAssessment.find({ patientId: id })
+            .sort({ assessmentTimestamp: -1 })
+            .limit(parseInt(limit));
+
+        res.status(200).json({
+            success: true,
+            data: history
+        });
+    } catch (error) {
+        console.error("Error fetching risk assessment history:", error);
         res.status(500).json({ success: false, message: error.message });
     }
 };

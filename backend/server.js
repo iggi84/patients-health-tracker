@@ -7,16 +7,19 @@ import alertRoute from "./routes/alert.route.js";
 import monitoringDataRoute from "./routes/monitoring-data.route.js";
 import patientRoute from "./routes/patient.route.js";
 import authRoute from "./routes/auth.route.js";
-import userRoute from "./routes/user.route.js";  // ADD THIS
+import userRoute from "./routes/user.route.js";
 import { requireAuth } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 
 const app = express();
+
+const CORS_ORIGIN = process.env.CORS_ORIGIN || "http://localhost:5173";
+
 app.options('*', cors());
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: CORS_ORIGIN,
         credentials: true
     })
 );

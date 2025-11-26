@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
     Box,
     Heading,
@@ -13,7 +13,6 @@ import {
     ListItem,
     ListIcon,
     Spinner,
-    Spacer,
     Divider,
     Collapse,
     IconButton,
@@ -21,19 +20,25 @@ import {
 } from '@chakra-ui/react';
 import { WarningIcon, CheckCircleIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 
-const RiskAssessmentCard = ({ patientId }) => {
+const RiskAssessmentCard = ({ patientId, demoMode = false, demoVitals = null, patientInfo = null }) => {
     const [assessment, setAssessment] = useState(null);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [expandedItems, setExpandedItems] = useState({});
+    const [demoAssessment, setDemoAssessment] = useState(null);
+    const [demoLoading, setDemoLoading] = useState(false);
+    const demoFetchRef = useRef(null);
 
     const API_URL = import.meta.env.VITE_API_URL;
     const bg = useColorModeValue("white", "gray.800");
     const textColor = useColorModeValue("gray.600", "gray.200");
     const historyBg = useColorModeValue("gray.50", "gray.700");
 
+    // Fetch real assessment data (when not in demo mode)
     useEffect(() => {
+        if (demoMode) return;
+
         const fetchData = async () => {
             try {
                 setLoading(true);
@@ -72,7 +77,6 @@ const RiskAssessmentCard = ({ patientId }) => {
                 const historyData = await historyResponse.json();
 
                 if (historyData.success) {
-                    // Remove the first item (current assessment) from history to avoid duplication
                     setHistory(historyData.data.slice(1));
                 }
 
@@ -86,7 +90,55 @@ const RiskAssessmentCard = ({ patientId }) => {
         if (patientId) {
             fetchData();
         }
-    }, [patientId, API_URL]);
+    }, [patientId, API_URL, demoMode]);
+
+    // Fetch demo assessment when vitals change
+    useEffect(() => {
+        if (!demoMode || !demoVitals) {
+            setDemoAssessment(null);
+            return;
+        }
+
+        // Debounce the API calls to avoid overwhelming the server
+        if (demoFetchRef.current) {
+            clearTimeout(demoFetchRef.current);
+        }
+
+        demoFetchRef.current = setTimeout(async () => {
+            try {
+                setDemoLoading(true);
+                const idToken = localStorage.getItem('idToken');
+
+                const response = await fetch(`${API_URL}/patient/demo-risk-assessment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${idToken}`
+                    },
+                    body: JSON.stringify({
+                        vitals: demoVitals,
+                        patientInfo: patientInfo
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    setDemoAssessment(data.data);
+                }
+            } catch (err) {
+                console.error('Demo assessment error:', err);
+            } finally {
+                setDemoLoading(false);
+            }
+        }, 500); // Wait 500ms after last vital change before fetching
+
+        return () => {
+            if (demoFetchRef.current) {
+                clearTimeout(demoFetchRef.current);
+            }
+        };
+    }, [demoMode, demoVitals, patientInfo, API_URL]);
 
     const toggleExpand = (index) => {
         setExpandedItems(prev => ({
@@ -95,18 +147,24 @@ const RiskAssessmentCard = ({ patientId }) => {
         }));
     };
 
-    if (loading) {
+    // Determine which assessment to display
+    const displayAssessment = demoMode ? demoAssessment : assessment;
+    const isLoading = demoMode ? (demoLoading && !demoAssessment) : loading;
+
+    if (isLoading) {
         return (
             <Box bg={bg} p={6} rounded="lg" shadow="lg" textAlign="center" minH="400px" display="flex" alignItems="center" justifyContent="center">
                 <VStack>
                     <Spinner size="lg" color="blue.500" />
-                    <Text mt={2} color={textColor} fontSize="sm">Loading AI assessment...</Text>
+                    <Text mt={2} color={textColor} fontSize="sm">
+                        {demoMode ? "Analyzing vitals..." : "Loading AI assessment..."}
+                    </Text>
                 </VStack>
             </Box>
         );
     }
 
-    if (error) {
+    if (!demoMode && error) {
         return (
             <Box bg={bg} p={6} rounded="lg" shadow="lg" minH="400px">
                 <Alert status="warning">
@@ -117,9 +175,18 @@ const RiskAssessmentCard = ({ patientId }) => {
         );
     }
 
-    if (!assessment) return null;
+    if (!displayAssessment) {
+        return (
+            <Box bg={bg} p={6} rounded="lg" shadow="lg" minH="400px">
+                <Heading size="md" mb={4}>AI Risk Assessment</Heading>
+                <Text color={textColor}>
+                    {demoMode ? "Waiting for vital signs data..." : "No assessment available"}
+                </Text>
+            </Box>
+        );
+    }
 
-    const isHighRisk = assessment.riskLevel === 'High Risk';
+    const isHighRisk = displayAssessment.riskLevel === 'High Risk';
 
     return (
         <Box
@@ -134,9 +201,25 @@ const RiskAssessmentCard = ({ patientId }) => {
             overflowY="auto"
             display="flex"
             flexDirection="column"
+            transition="border-color 0.3s"
         >
             <VStack align="stretch" spacing={4} flex="1">
-                <Heading size="md">AI Risk Assessment</Heading>
+                <HStack justify="space-between" align="center">
+                    <Heading size="md">AI Risk Assessment</Heading>
+                    {demoMode && (
+                        <Badge colorScheme="purple" variant="solid">
+                            LIVE DEMO
+                        </Badge>
+                    )}
+                </HStack>
+
+                {/* Demo loading indicator */}
+                {demoMode && demoLoading && (
+                    <HStack spacing={2}>
+                        <Spinner size="xs" color="purple.500" />
+                        <Text fontSize="xs" color="purple.500">Updating prediction...</Text>
+                    </HStack>
+                )}
 
                 {/* Current Assessment */}
                 <Box>
@@ -147,19 +230,32 @@ const RiskAssessmentCard = ({ patientId }) => {
                             px={3}
                             py={1}
                             rounded="md"
+                            transition="all 0.3s"
                         >
-                            {assessment.riskLevel}
+                            {displayAssessment.riskLevel}
                         </Badge>
                         <Text color={textColor} fontSize="sm">
-                            {(assessment.confidence * 100).toFixed(0)}% confidence
+                            {(displayAssessment.confidence * 100).toFixed(0)}% confidence
                         </Text>
                     </HStack>
 
-                    {assessment.riskFactors && assessment.riskFactors.length > 0 && (
+                    {/* Probabilities */}
+                    {displayAssessment.probabilities && (
+                        <HStack spacing={4} mb={2} fontSize="xs" color={textColor}>
+                            <Text>
+                                Low: {(displayAssessment.probabilities['Low Risk'] * 100).toFixed(1)}%
+                            </Text>
+                            <Text>
+                                High: {(displayAssessment.probabilities['High Risk'] * 100).toFixed(1)}%
+                            </Text>
+                        </HStack>
+                    )}
+
+                    {displayAssessment.riskFactors && displayAssessment.riskFactors.length > 0 && (
                         <Box mt={2}>
                             <Text fontSize="sm" fontWeight="bold" mb={1}>Risk Factors:</Text>
                             <List spacing={1}>
-                                {assessment.riskFactors.map((factor, idx) => (
+                                {displayAssessment.riskFactors.map((factor, idx) => (
                                     <ListItem key={idx} fontSize="sm">
                                         <HStack align="start">
                                             <ListIcon
@@ -171,7 +267,10 @@ const RiskAssessmentCard = ({ patientId }) => {
                                                 }
                                                 mt={0.5}
                                             />
-                                            <Text>{factor.factor}</Text>
+                                            <VStack align="start" spacing={0}>
+                                                <Text fontWeight="medium">{factor.factor}: {factor.value}</Text>
+                                                <Text fontSize="xs" color={textColor}>{factor.explanation}</Text>
+                                            </VStack>
                                         </HStack>
                                     </ListItem>
                                 ))}
@@ -179,7 +278,7 @@ const RiskAssessmentCard = ({ patientId }) => {
                         </Box>
                     )}
 
-                    {assessment.riskFactors && assessment.riskFactors.length === 0 && (
+                    {displayAssessment.riskFactors && displayAssessment.riskFactors.length === 0 && (
                         <HStack color="green.500" fontSize="sm">
                             <CheckCircleIcon />
                             <Text>No significant risk factors identified</Text>
@@ -187,12 +286,12 @@ const RiskAssessmentCard = ({ patientId }) => {
                     )}
 
                     <Text fontSize="xs" color="gray.500" mt={2}>
-                        Assessed: {new Date(assessment.timestamp).toLocaleString()}
+                        {demoMode ? "Live prediction" : `Assessed: ${new Date(displayAssessment.timestamp).toLocaleString()}`}
                     </Text>
                 </Box>
 
-                {/* Assessment History */}
-                {history.length > 0 && (
+                {/* Assessment History - Only show when not in demo mode */}
+                {!demoMode && history.length > 0 && (
                     <>
                         <Divider />
 

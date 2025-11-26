@@ -193,4 +193,52 @@ export const getRiskAssessmentHistory = async (req, res) => {
         console.error("Error fetching risk assessment history:", error);
         res.status(500).json({ success: false, message: error.message });
     }
+
+
+};
+
+// Demo risk assessment - accepts vitals directly without DB lookup
+export const getDemoRiskAssessment = async (req, res) => {
+    try {
+        const { vitals, patientInfo } = req.body;
+
+        if (!vitals) {
+            return res.status(400).json({ success: false, message: "Vitals data required" });
+        }
+
+        // Create mock patient and monitoring objects for the predictor
+        const mockPatient = {
+            dateOfBirth: patientInfo?.dateOfBirth || null,
+            age: patientInfo?.age || 50,
+            weight: patientInfo?.weight || 70,
+            height: patientInfo?.height || 170,
+        };
+
+        const mockMonitoring = {
+            vitalSigns: {
+                heartRate: vitals.heartRate,
+                respiratoryRate: vitals.respiratoryRate,
+                temperature: vitals.temperature,
+                oxygenSaturation: vitals.oxygenSaturation,
+                bloodPressure: {
+                    systolic: vitals.systolic,
+                    diastolic: vitals.diastolic,
+                },
+            },
+        };
+
+        // Get ML prediction
+        const prediction = await getRiskPrediction(mockPatient, mockMonitoring);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                timestamp: new Date(),
+                ...prediction,
+            },
+        });
+    } catch (error) {
+        console.error("Demo risk assessment error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
 };

@@ -6,7 +6,8 @@ import {
   updatePatient,
   deletePatient,
   getPatientRiskAssessment,
-  getRiskAssessmentHistory
+  getRiskAssessmentHistory,
+  getDemoRiskAssessment
 } from "../controllers/patient.controller.js";
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router.put("/:id", updatePatient);
 router.delete("/:id", deletePatient);
 router.get("/:id/risk-assessment", getPatientRiskAssessment);
 router.get("/:id/risk-assessment-history", getRiskAssessmentHistory);
+router.post("/demo-risk-assessment", getDemoRiskAssessment);
 
 export default router;

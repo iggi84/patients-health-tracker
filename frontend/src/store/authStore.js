@@ -1,7 +1,9 @@
-// frontend/src/store/authStore.js
+
 import { create } from "zustand";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const COGNITO_REDIRECT_URI = import.meta.env.VITE_COGNITO_REDIRECT_URI;
+const COGNITO_LOGOUT_URI = import.meta.env.VITE_COGNITO_LOGOUT_URI;
 
 export const useAuthStore = create((set, get) => ({
     user: null,
@@ -119,7 +121,7 @@ export const useAuthStore = create((set, get) => ({
     getLoginUrl: () => {
         const domain = "opto-health.auth.ap-southeast-2.amazoncognito.com";
         const clientId = "5iq87lifnfavppb1mcstdfn2vt";
-        const redirectUri = encodeURIComponent("http://localhost:5173/callback");
+        const redirectUri = encodeURIComponent(COGNITO_REDIRECT_URI);
         const scopes = "openid+email+profile";
 
         return `https://${domain}/login?client_id=${clientId}&response_type=code&scope=${scopes}&redirect_uri=${redirectUri}`;
@@ -147,7 +149,7 @@ export const useAuthStore = create((set, get) => ({
 
         const domain = "opto-health.auth.ap-southeast-2.amazoncognito.com";
         const clientId = "5iq87lifnfavppb1mcstdfn2vt";
-        const logoutUri = encodeURIComponent("http://localhost:5173/");
+        const logoutUri = encodeURIComponent(COGNITO_LOGOUT_URI);
 
         window.location.href = `https://${domain}/logout?client_id=${clientId}&logout_uri=${logoutUri}`;
     },

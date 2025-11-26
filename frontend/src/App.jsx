@@ -1,6 +1,6 @@
 // frontend/src/App.jsx
 import { Box, useColorModeValue } from "@chakra-ui/react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { useEffect } from "react";
 import Navbar from "./components/Navbar.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -17,22 +17,22 @@ import { useAuthStore } from "./store/authStore";
 function App() {
     const { initAuth, isAuthenticated } = useAuthStore();
 
-    // Initialize auth on app load
+
     useEffect(() => {
         initAuth();
     }, [initAuth]);
 
     return (
         <Box minH={"100vh"} bg={useColorModeValue("gray.100", "gray.900")}>
-            {/* Show Navbar only when authenticated */}
+
             {isAuthenticated && <Navbar />}
 
             <Routes>
-                {/* Public Routes */}
+
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/callback" element={<CallbackPage />} />
 
-                {/* Protected Routes - Doctor + Admin */}
+
                 <Route
                     path="/"
                     element={
@@ -66,7 +66,6 @@ function App() {
                     }
                 />
 
-                {/* Admin Only Routes */}
                 <Route
                     path="/admin"
                     element={
@@ -88,6 +87,15 @@ function App() {
                     element={
                         <ProtectedRoute requiredRole="Admin">
                             <AdminPage />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="*"
+                    element={
+                        <ProtectedRoute>
+                            <Navigate to="/" replace />
                         </ProtectedRoute>
                     }
                 />

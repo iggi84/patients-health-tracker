@@ -67,35 +67,33 @@ const Navbar = () => {
                                 </Link>
                             )}
 
-                            {/* Dashboards Menu */}
-                            <Menu>
-                                <MenuButton
-                                    as={Button}
-                                    size="sm"
-                                    rightIcon={<ChevronDownIcon />}
-                                    colorScheme="purple"
-                                    variant="outline"
-                                >
-                                    Dashboards
-                                </MenuButton>
-                                <MenuList>
-                                    <Link to="/">
-                                        <MenuItem>
-                                            Doctor Dashboard
-                                        </MenuItem>
-                                    </Link>
-                                    {isAdmin() && (
-                                        <>
-                                            <MenuDivider />
-                                            <Link to="/admin">
-                                                <MenuItem>
-                                                    Admin Panel
-                                                </MenuItem>
-                                            </Link>
-                                        </>
-                                    )}
-                                </MenuList>
-                            </Menu>
+                            {/* Dashboards Menu - Only show for Admins */}
+                            {isAdmin() && (
+                                <Menu>
+                                    <MenuButton
+                                        as={Button}
+                                        size="sm"
+                                        rightIcon={<ChevronDownIcon />}
+                                        colorScheme="purple"
+                                        variant="outline"
+                                    >
+                                        Dashboards
+                                    </MenuButton>
+                                    <MenuList>
+                                        <Link to="/">
+                                            <MenuItem>
+                                                Doctor Dashboard
+                                            </MenuItem>
+                                        </Link>
+                                        <MenuDivider />
+                                        <Link to="/admin">
+                                            <MenuItem>
+                                                Admin Panel
+                                            </MenuItem>
+                                        </Link>
+                                    </MenuList>
+                                </Menu>
+                            )}
 
                             {/* User Menu */}
                             <Menu>

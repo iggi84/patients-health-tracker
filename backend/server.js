@@ -25,26 +25,12 @@ const PORT = process.env.PORT || 3000;
 const __dirname = path.resolve();
 app.use(express.json());
 
-// Auth routes (public - no auth required for token exchange)
-app.use("/api/auth", authRoute);  // ADD THIS
+app.use("/api/auth", authRoute);
 
-// Protected test route
-app.get('/api/protected-test', requireAuth, (req, res) => {
-    res.json({
-        message: 'You are authenticated with Cognito 🎉',
-        user: {
-            sub: req.user.sub,
-            email: req.user.email,
-            groups: req.user['cognito:groups'] || [],
-        },
-    });
-});
-
-// API routes (will add protection later)
-app.use("/api/alert", alertRoute);
-app.use("/api/monitoring", monitoringDataRoute);
-app.use("/api/patient", patientRoute);
-app.use("/api/users", userRoute);
+app.use("/api/alert", requireAuth, alertRoute);
+app.use("/api/monitoring", requireAuth, monitoringDataRoute);
+app.use("/api/patient", requireAuth, patientRoute);
+app.use("/api/users", requireAuth, userRoute);
 
 if (process.env.NODE_ENV === "production") {
     console.log("This is the production setting.");
